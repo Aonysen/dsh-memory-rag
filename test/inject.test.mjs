@@ -4,7 +4,7 @@ import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
-import { buildRulesText, renderIndexText } from '../lib/inject.js'
+import { buildRulesText, renderIndexText, truncateAtLine } from '../lib/inject.js'
 import { resolveConfig } from '../lib/config.js'
 import { projectHash } from '../lib/search.js'
 import { MemoryStore } from '../lib/store.js'
@@ -86,4 +86,15 @@ test('子代理只看到置顶条目', () => {
   const text = renderIndexText(store, config, { cwd: null, isSubagent: true })
   assert.match(text, /置顶/)
   assert.doesNotMatch(text, /普通/)
+})
+
+test('超长索引按行截断，不切半行', () => {
+  const text = '# 标题\n- 第一行内容\n- 第二行内容\n- 第三行内容\n'
+  const truncated = truncateAtLine(text, 24)
+  assert.ok(truncated.length <= 24, `长度 ${truncated.length} 超过上限`)
+  assert.ok(truncated.endsWith('…'))
+  // 结尾必须在完整行边界：去掉省略号后，不以半个词结尾
+  const body = truncated.slice(0, -1)
+  assert.ok(body.endsWith('\n') || body.endsWith('内容') || body.endsWith('# 标题'), `截断位置异常：${body}`)
+  assert.doesNotMatch(body, /第$/)
 })

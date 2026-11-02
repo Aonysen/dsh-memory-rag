@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { mkdtempSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { homedir, tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 import { resolveConfig } from '../lib/config.js'
@@ -42,7 +42,7 @@ function setup() {
     assert.ok(found, `缺少工具 ${name}`)
     return found
   }
-  return { defs, store, tool }
+  return { defs, store, tool, config }
 }
 
 test('注册五个工具且输出 schema 固定', () => {
@@ -161,4 +161,33 @@ test('关键词模式：无 Key、不调用嵌入也能写入与检索', async (
   const stats = await tool('rag_stats').execute({}, {})
   assert.match(stats.message, /无需 Key/)
   assert.match(stats.message, /BM25/)
+})
+
+test('rag_ingest 默认拒绝敏感目录', async () => {
+  const { tool } = setup()
+  const denied = join(homedir(), '.ssh', 'id_ed25519.txt')
+  const result = await tool('rag_ingest').execute({ path: denied }, {})
+  assert.equal(result.ok, false)
+  assert.match(result.message, /禁止导入/)
+})
+
+test('rag_ingest 对工作目录之外的路径给出警告', async () => {
+  const { tool } = setup()
+  const root = mkdtempSync(join(tmpdir(), 'rag-memory-outside-'))
+  writeFileSync(join(root, 'a.md'), '# 标题\n\n内容。', 'utf8')
+  const exec = { agent: { session: { header: { cwd: process.cwd() } } } }
+  const result = await tool('rag_ingest').execute({ path: root }, exec)
+  assert.equal(result.ok, true)
+  assert.match(result.message, /工作目录之外/)
+})
+
+test('ingestOutsideCwd=deny 时拒绝工作目录之外的路径', async () => {
+  const { tool, config } = setup()
+  config.ingestOutsideCwd = 'deny'
+  const root = mkdtempSync(join(tmpdir(), 'rag-memory-outside-deny-'))
+  writeFileSync(join(root, 'a.md'), '# 标题\n\n内容。', 'utf8')
+  const exec = { agent: { session: { header: { cwd: process.cwd() } } } }
+  const result = await tool('rag_ingest').execute({ path: root }, exec)
+  assert.equal(result.ok, false)
+  assert.match(result.message, /工作目录之外/)
 })

@@ -11,7 +11,7 @@ Requirements: Node.js >= 20 (Node 22/24 tested), any OS.
 ```bash
 git clone https://github.com/aonysen/dsh-memory-rag.git
 cd dsh-memory-rag
-node --test          # 94 offline unit tests, no network needed
+node --test          # 104 offline unit tests, no network needed
 ```
 
 Optional live smoke test (needs an API key in `<dataDir>/api-key` or env):

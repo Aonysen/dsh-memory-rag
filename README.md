@@ -104,7 +104,9 @@ dsh plugin add github:Aonysen/dsh-memory-rag
 
 1. 环境变量（随提供商预设，如 `DASHSCOPE_API_KEY`）；
 2. DSH 凭据服务（若宿主提供）；
-3. `<数据目录>/api-key` 文件（设置页写入的就是这里，权限 600）。
+3. `<数据目录>/api-key` 文件（设置页写入；POSIX 0600，Windows 上尽力用 `icacls` 只保留当前用户）。
+
+保存时优先写 DSH 凭据服务（`keyStorage: auto`）；凭据服务不可用才落文件。文件是**明文**的——对密钥管理有要求的环境请用环境变量或凭据服务。
 
 ## 配置（cordis）
 
@@ -123,6 +125,12 @@ dsh plugin add github:Aonysen/dsh-memory-rag
     maxChunksPerIngest: 500
     requestTimeoutMs: 20000
     memoryDir: null          # null → <DSH_HOME>/memories/dsh-rag-memory
+    lockWaitMs: 100          # 抢写锁的同步等待上限（超时交给工具层异步重试）
+    ingestDeny: ['~/.ssh', '~/.aws', '~/.gnupg', '%APPDATA%', 'C:\\Windows']
+    ingestRoots: []          # 非空时只允许导入这些根目录
+    ingestOutsideCwd: warn   # warn | deny | allow
+    keyStorage: auto         # auto（优先 DSH 凭据服务）| file | credentials
+    largeStoreWarning: 20000 # 超过该条目数时 rag_stats 给出提示
 ```
 
 ## 数据与隐私
@@ -131,9 +139,33 @@ dsh plugin add github:Aonysen/dsh-memory-rag
   - `index.jsonl`：追加式向量库（删除写墓碑，超阈值自动压缩）
   - `meta.json`：模型/维度/revision/条数
   - `settings.json`：设置页保存项
-  - `api-key`：Key 文件（明文，仅本机）
+  - `api-key`：Key 文件（**明文**；POSIX 上 0600，Windows 上尽力用 `icacls` 只保留当前用户）
 - 只有**显式写入/导入的文本**会发往嵌入端点；检索与排序全在本机。
+- `rag_ingest` 会读取本机文件（仅 `.md/.mdx/.txt`），**向量模式下切块会被发往嵌入端点**。默认拒绝 `ingestDeny` 里的敏感目录（`~/.ssh`、`~/.aws`、`%APPDATA%`、`C:\Windows` 等）；读取工作目录之外的路径时默认给出警告，可配置为 `deny`。
 - 从旧版 `dsh-qwen-rag` 升级时，首次启动会自动把旧目录数据复制过来（原件保留）。
+
+## 并发与多进程
+
+结论：**同一个记忆库建议只由一个进程写**，但写入不会互相覆盖到丢数据。
+
+- 写锁（`.write.lock`）保证写入不交错；锁超过 30s 视为陈旧并回收。
+- **每次写入前都会 `stat` 索引并重读**（`refreshIfChanged`），压缩前同样先重读——所以 A 进程不会用陈旧内存覆盖 B 进程刚写入的记录。
+- 读路径（检索/列表/统计）也会检查磁盘变化，桌面端能看到 CLI 写入的内容，无需重启。
+- 抢锁的同步等待上限默认 100ms；冲突时工具层会异步退避重试（总预算 ~2.5s），仍失败则返回"记忆库忙"。
+- 锁只防交错写坏文件，不提供事务语义；如果你用 CLI 大批量写过，重启桌面端能拿到最干净的内存视图。
+
+## 规模与限制
+
+- 检索是**全量精确扫描**（O(N×维) 点积），没有 ANN 索引。实测（本机 CPU，1024 维，20 次查询平均）：
+
+| 条目数 | 向量检索 | BM25 检索 | 额外堆内存 |
+|---|---|---|---|
+| 1,000 | 3.5 ms | 0.9 ms | ≈2 MB |
+| 5,000 | 16.3 ms | 2.8 ms | ≈39 MB |
+| 20,000 | 55.8 ms | 17.6 ms | ≈94 MB |
+
+- 建议 **≤ 5,000 条**；超过 `largeStoreWarning`（默认 20,000）时 `rag_stats` 会给警告。十万级请用专业向量库，不要用这个插件。
+- 复现：`node --expose-gc scripts/bench-search.mjs`。
 
 ## 排障
 
@@ -146,7 +178,8 @@ dsh plugin add github:Aonysen/dsh-memory-rag
 | 429 | 已自动重试 2 次；仍失败则减小 `maxChunksPerIngest` 或稍后再试 |
 | 维度不匹配 / 索引由模型 X 生成 | 换过模型或维度 → 清空记忆库后重新导入 |
 | 设置页报 `Failed to fetch` | 桌面页面来自 `dsh-app://`，属跨源请求：升级后重启宿主并刷新页面 |
-| 索引被另一个进程占用 | 另一个 DSH 进程正在写同一目录；稍后重试（锁 30s 自动回收） |
+| 提示"记忆库忙" | 另一个 DSH 进程正在写；工具层已重试约 2.5s，稍后再试（锁 30s 自动回收） |
+| `rag_ingest` 提示"禁止导入" | 路径命中 `ingestDeny`；确需导入请调整 `cordis.patch.yml` 里的 `ingestDeny` |
 
 ## 设置 API（脚本/高级用法）
 
@@ -165,8 +198,9 @@ POST   /dsh-memory-rag/api/memories/update  置顶/删除 { id, action: pin|unpi
 ## 开发
 
 ```powershell
-node --test                    # 94 个单测，无网络
+node --test                    # 104 个单测，无网络
 node scripts/smoke-embed.mjs   # 真实链路冒烟（需要 Key）
+node --expose-gc scripts/bench-search.mjs   # 检索性能基准
 npm pack --dry-run             # 检查发布产物
 ```
 

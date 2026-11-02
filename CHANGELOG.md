@@ -1,5 +1,25 @@
 # Changelog
 
+## 1.1.0
+
+安全与并发修复版。
+
+- **多进程丢写修复**：写入前 `refreshIfChanged()` 重读磁盘，`compact()` 同样先重读；
+  读路径（list/get/stats）也会检测磁盘变化。A 进程不会再用手里的陈旧内存覆盖
+  B 进程刚写入的记录；桌面端也能看到 CLI 的写入而无需重启。
+- **锁不再阻塞事件循环 3 秒**：同步等待上限改为 `lockWaitMs`（默认 100ms），
+  超时抛 `StoreBusyError`；工具层与设置页的写入改为异步退避重试（约 2.5s 预算）。
+- **`rag_ingest` 增加读取边界**：`ingestDeny` 默认拒绝 `~/.ssh`、`~/.aws`、`~/.gnupg`、
+  `~/.config`、`%APPDATA%`、`C:\Windows`、`/etc` 等；`ingestRoots` 可选白名单；
+  工作目录之外的路径默认给出"内容会发往嵌入端点"的警告（可配 `deny`/`allow`）。
+- **Key 存储加固**：`keyStorage: auto` 时优先写 DSH 凭据服务，回退文件；
+  Windows 上对 `api-key` 尽力执行 `icacls` 收紧 ACL；README 明确标注明文文件的边界。
+- **规模护栏**：`largeStoreWarning`（默认 20000）触发 `rag_stats` 提示；
+  README 新增实测数据（1k/5k/20k 条查询耗时与内存）与「规模与限制」。
+- 修正 `lib/search.js`、`lib/chunk.js` 的旧插件名注释；`maxInjectChars` 截断改为
+  按行边界（不再切半行）。
+- 单测 94 → 104，新增跨实例丢写回归、忙锁、重试、ingest 边界与截断用例。
+
 ## 1.0.0
 
 首个公开发布版本（0.x 为内部迭代，从未发布到 npm，不构成兼容承诺）。

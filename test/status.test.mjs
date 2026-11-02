@@ -95,19 +95,19 @@ test('记忆库搜索与 scope 过滤', () => {
   assert.equal(globalOnly.total, 1)
 })
 
-test('置顶与删除', () => {
+test('置顶与删除', async () => {
   const { store } = setup()
   const added = store.add({ text: '可操作条目', hash: 'h1', vector: unit(0), meta: { scope: 'global' } })
 
-  assert.equal(updateMemory(store, { id: added.id, action: 'pin' }).ok, true)
+  assert.equal((await updateMemory(store, { id: added.id, action: 'pin' })).ok, true)
   assert.equal(store.get(added.id).meta.pinned, true)
 
-  assert.equal(updateMemory(store, { id: added.id, action: 'unpin' }).ok, true)
+  assert.equal((await updateMemory(store, { id: added.id, action: 'unpin' })).ok, true)
   assert.equal(store.get(added.id).meta.pinned, false)
 
-  assert.equal(updateMemory(store, { id: 'missing', action: 'pin' }).ok, false)
-  assert.equal(updateMemory(store, { id: added.id, action: 'boom' }).ok, false)
+  assert.equal((await updateMemory(store, { id: 'missing', action: 'pin' })).ok, false)
+  assert.equal((await updateMemory(store, { id: added.id, action: 'boom' })).ok, false)
 
-  assert.equal(updateMemory(store, { id: added.id, action: 'delete' }).ok, true)
+  assert.equal((await updateMemory(store, { id: added.id, action: 'delete' })).ok, true)
   assert.equal(store.get(added.id), undefined)
 })

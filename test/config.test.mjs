@@ -23,6 +23,21 @@ test('默认配置带提供商预设', () => {
   assert.equal(config.embeddingModel, 'text-embedding-v4')
   assert.equal(config.dimensions, 1024)
   assert.ok(config.memoryDir.endsWith(join('memories', 'dsh-rag-memory')))
+  assert.equal(config.lockWaitMs, 100)
+  assert.equal(config.ingestOutsideCwd, 'warn')
+  assert.equal(config.keyStorage, 'auto')
+  assert.equal(config.largeStoreWarning, 20000)
+  assert.ok(config.ingestDeny.includes('~/.ssh'))
+  assert.deepEqual(config.ingestRoots, [])
+})
+
+test('并发与安全配置的校验', () => {
+  assert.equal(resolveConfig({ lockWaitMs: 0 }).lockWaitMs, 0)
+  assert.throws(() => resolveConfig({ lockWaitMs: 5000 }), /lockWaitMs/)
+  assert.throws(() => resolveConfig({ ingestOutsideCwd: 'sometimes' }), /ingestOutsideCwd/)
+  assert.throws(() => resolveConfig({ keyStorage: 'vault' }), /keyStorage/)
+  assert.throws(() => resolveConfig({ ingestDeny: 'x' }), /ingestDeny/)
+  assert.throws(() => resolveConfig({ ingestRoots: [1] }), /ingestRoots/)
 })
 
 test('切换 provider 自动带出端点/模型/维度', () => {

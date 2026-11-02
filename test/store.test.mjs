@@ -4,7 +4,7 @@ import { appendFileSync, existsSync, mkdtempSync, utimesSync, writeFileSync } fr
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
-import { MemoryStore, StoreMismatchError, decodeVector, encodeVector } from '../lib/store.js'
+import { MemoryStore, StoreBusyError, StoreMismatchError, decodeVector, encodeVector } from '../lib/store.js'
 import { DIM, unit } from './helpers.mjs'
 
 const CONFIG = { embeddingModel: 'text-embedding-v4', dimensions: DIM }
@@ -115,4 +115,40 @@ test('墓碑超过阈值时自动压缩索引', () => {
   const reloaded = new MemoryStore(dir, CONFIG)
   assert.equal(reloaded.stats().count, 0)
   assert.equal(reloaded.stats().tombstones, 0)
+})
+
+test('跨实例写入不会被压缩抹掉（多进程丢写回归）', () => {
+  const dir = tempDir()
+  const a = new MemoryStore(dir, CONFIG)
+  a.list() // 让 A 先加载（模拟桌面端已启动）
+
+  const b = new MemoryStore(dir, CONFIG)
+  const x = b.add({ text: 'B 写入 X', hash: 'hx', vector: unit(0), meta: { scope: 'global' } }).id
+  const y = b.add({ text: 'B 写入 Y', hash: 'hy', vector: unit(1), meta: { scope: 'global' } }).id
+  const z = b.add({ text: 'B 写入 Z', hash: 'hz', vector: unit(2), meta: { scope: 'global' } }).id
+
+  // A 读取时应感知到 B 的写入
+  assert.notEqual(a.get(z), undefined)
+  assert.equal(a.list().length, 3)
+
+  const w = a.add({ text: 'A 写入 W', hash: 'hw', vector: unit(3), meta: { scope: 'global' } }).id
+  a.remove(y)
+
+  // 压缩前 A 的内存已合并 B 的记录；压缩后文件里仍应保留 X/Z/W
+  assert.equal(a.compact(), true)
+  const reloaded = new MemoryStore(dir, CONFIG)
+  const ids = reloaded.list().map((entry) => entry.id).sort()
+  assert.deepEqual(ids, [x, z, w].sort())
+})
+
+test('写锁被占用时快速失败并抛 StoreBusyError', () => {
+  const dir = tempDir()
+  const store = new MemoryStore(dir, { ...CONFIG, lockWaitMs: 0 })
+  store.ensureDir()
+  writeFileSync(join(dir, '.write.lock'), String(process.pid), 'utf8')
+
+  assert.throws(
+    () => store.add({ text: 'blocked', hash: 'h', vector: unit(0), meta: { scope: 'global' } }),
+    (error) => error instanceof StoreBusyError,
+  )
 })
