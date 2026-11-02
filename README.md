@@ -23,11 +23,21 @@
 
 ## 安装
 
+**从 npm 安装**（npm 发布后可用，最推荐）：
+
 ```bash
 dsh plugin add dsh-memory-rag
 ```
 
-或 DSH 侧栏 **插件** → **添加插件**，输入包名 `dsh-memory-rag`；本地开发时也可以直接填本目录的绝对路径。
+**直接从 GitHub 安装**（现在就能用，安装的是仓库 main 分支）：
+
+```bash
+dsh plugin add github:Aonysen/dsh-memory-rag
+```
+
+**在 DSH 界面里装**：侧栏 **插件** → **添加插件**，粘贴 `dsh-memory-rag` 或 `github:Aonysen/dsh-memory-rag`（本地开发时也可以填本目录的绝对路径）。
+
+**从插件市场装**：侧栏 **插件** → **发现**，搜索 `memory`，找到后用卡片的安装按钮。
 
 安装后重启 DSH 桌面端并刷新页面（F5），然后打开 设置 → **RAG 记忆**。
 

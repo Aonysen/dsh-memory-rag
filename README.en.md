@@ -23,11 +23,21 @@ Works with **any OpenAI-compatible embeddings endpoint**: Qwen (China/internatio
 
 ## Install
 
+**From npm** (after the npm release, recommended):
+
 ```bash
 dsh plugin add dsh-memory-rag
 ```
 
-Or open DSH sidebar → **Plugins** → **Add plugin** and paste the package name `dsh-memory-rag` (a local directory path also works while developing).
+**From GitHub** (works today; installs the `main` branch):
+
+```bash
+dsh plugin add github:Aonysen/dsh-memory-rag
+```
+
+**From the DSH UI**: sidebar → **Plugins** → **Add plugin**, then paste `dsh-memory-rag` or `github:Aonysen/dsh-memory-rag` (a local directory path also works while developing).
+
+**From the plugin market**: sidebar → **Plugins** → **Discover**, search for `memory`, and use the install action on the card.
 
 Restart the DSH desktop app after installing, reload the page, then open Settings → **RAG Memory**.
 
