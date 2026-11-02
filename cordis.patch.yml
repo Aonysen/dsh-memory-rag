@@ -1,0 +1,11 @@
+# dsh-memory-rag bundle patch: inserts the RAG memory host row.
+# Install with the Web plugin page: 插件 → 添加插件 → 输入本目录的绝对路径，
+# 或在支持的市场里按包名安装。User overrides go into the profile patch layer;
+# a matching row override replaces this whole config, and missing keys fall back
+# to lib/config.js DEFAULTS.
+- insert:
+    - id: dsh-memory-rag
+      name: dsh-memory-rag
+      config:
+        provider: qwen-cn
+        topK: 5

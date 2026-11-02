@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "RAG Memory",
+    "description": "Semantic memory over any OpenAI-compatible embedding endpoint (Qwen, SiliconFlow, OpenAI, Ollama, custom): search, remember, batch ingest, session index injection, and a Settings page."
+  }
+}

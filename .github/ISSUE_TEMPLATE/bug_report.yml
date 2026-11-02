@@ -1,0 +1,54 @@
+name: Bug report
+description: Something in dsh-memory-rag does not work as documented.
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Please do not paste API keys or private memory text.
+  - type: input
+    id: plugin-version
+    attributes:
+      label: Plugin version
+      description: From the settings page footer or `package.json` (e.g. 1.0.0).
+      placeholder: "1.0.0"
+    validations:
+      required: true
+  - type: input
+    id: dsh-version
+    attributes:
+      label: DSH version
+      description: Desktop / web host version (e.g. 0.2.1-rc.5).
+      placeholder: "0.2.1-rc.5"
+    validations:
+      required: true
+  - type: dropdown
+    id: provider
+    attributes:
+      label: Provider
+      options:
+        - qwen-cn
+        - qwen-intl
+        - siliconflow
+        - openai
+        - ollama
+        - custom
+        - keyword (BM25)
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error text / logs
+      description: Settings page error, `rag_stats` output, or host log lines. Redact keys and memory content.
+      render: text
+    validations:
+      required: false

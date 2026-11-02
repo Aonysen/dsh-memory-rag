@@ -1,0 +1,45 @@
+name: Feature request
+description: Suggest a capability, provider or workflow improvement.
+title: "[feature] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Keep in mind the scope: this plugin is a local memory store for DSH agents, not a general RAG platform.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you trying to solve?
+      description: Describe the workflow that is awkward or impossible today.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: How you imagine it working (a tool, a setting, a page, a provider…).
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Retrieval / ranking
+        - Storage / data model
+        - Settings page
+        - Memory insights page
+        - Local modes (Ollama / BM25)
+        - Providers / endpoints
+        - Docs
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What you do today instead, or what other tools do.
+    validations:
+      required: false
