@@ -1,5 +1,9 @@
 name: publish
 
+# Trusted publishing (OIDC): no long-lived npm token needed.
+# One-time setup after the first manual publish:
+#   npmjs.com → package → Settings → Trusted publishing → GitHub Actions
+#   owner: aonysen · repository: dsh-memory-rag · workflow: publish.yml
 on:
   release:
     types: [published]
@@ -17,9 +21,9 @@ jobs:
         with:
           node-version: 22
           registry-url: https://registry.npmjs.org
+      - name: Upgrade npm (trusted publishing needs npm >= 11.5.1)
+        run: npm install -g npm@latest
       - name: Unit tests
         run: node --test
       - name: Publish to npm
-        run: npm publish --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public
