@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.1
+
+- 插件详情页（插件 → 详细介绍）改为显示专门的简介文档：`locale/*.json` 的
+  `meta.detail` 指向 `docs/intro.zh.md` / `docs/intro.en.md`，不再依赖 README 兜底。
+- 发布产物新增这两个简介文件（`files`），从 npm 安装时详情页同样可用。
+
 ## 1.1.0
 
 安全与并发修复版。

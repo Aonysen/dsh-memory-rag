@@ -1,6 +1,7 @@
 {
   "meta": {
     "title": "RAG 记忆",
-    "description": "任意 OpenAI 兼容端点的语义记忆（千问 / 硅基流动 / OpenAI / Ollama / 自定义）：检索、写入、批量导入、会话索引注入与设置页。"
+    "description": "任意 OpenAI 兼容端点的语义记忆（千问 / 硅基流动 / OpenAI / Ollama / 自定义）：检索、写入、批量导入、会话索引注入与设置页。",
+    "detail": "docs/intro.zh.md"
   }
 }
