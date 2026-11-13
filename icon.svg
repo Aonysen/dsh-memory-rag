@@ -1,14 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Qwen RAG memory">
-  <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#5B8DEF"/>
-      <stop offset="1" stop-color="#7B5BEF"/>
-    </linearGradient>
-  </defs>
-  <rect x="2" y="2" width="60" height="60" rx="16" fill="url(#g)"/>
-  <circle cx="27" cy="27" r="11" fill="none" stroke="#FFFFFF" stroke-width="3.5"/>
-  <line x1="35" y1="35" x2="46" y2="46" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round"/>
-  <circle cx="23" cy="24" r="2.4" fill="#FFFFFF"/>
-  <circle cx="31" cy="29" r="2.4" fill="#FFFFFF" opacity="0.85"/>
-  <circle cx="25" cy="32" r="2.4" fill="#FFFFFF" opacity="0.7"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36" role="img" aria-label="Memory">
+  <g transform="translate(0 2.2)">
+    <g transform="translate(-0.8 0)"><path d="M17.4 8.3C16.5 7.5 15.3 7.5 14.4 8.1 13.3 7.8 12.2 8.3 11.6 9.3 10.3 9.4 9.3 10.4 9.2 11.7 8.1 12.4 7.7 13.8 8.4 14.9 9 16 10.1 16.6 11.3 16.5 10.9 18.1 11.6 19.7 13 20.5 13.7 22 15.4 22.8 16.9 22.4 17.1 22.3 17.3 22.1 17.4 21.9Z" fill="#ffffff" stroke="#111111" stroke-width="2" stroke-linejoin="round"/><path d="M13.9 10.3C12.9 11.4 13.4 12.6 14.5 12.8" fill="none" stroke="#111111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M10.6 14.3C11.9 14.8 12.5 16 12.1 17.3" fill="none" stroke="#111111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.7 19.1C13.4 18.2 14.6 18.1 15.3 18.9" fill="none" stroke="#111111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+    <g transform="translate(36 0) scale(-1 1)"><g transform="translate(-0.8 0)"><path d="M17.4 8.3C16.5 7.5 15.3 7.5 14.4 8.1 13.3 7.8 12.2 8.3 11.6 9.3 10.3 9.4 9.3 10.4 9.2 11.7 8.1 12.4 7.7 13.8 8.4 14.9 9 16 10.1 16.6 11.3 16.5 10.9 18.1 11.6 19.7 13 20.5 13.7 22 15.4 22.8 16.9 22.4 17.1 22.3 17.3 22.1 17.4 21.9Z" fill="#ffffff" stroke="#111111" stroke-width="2" stroke-linejoin="round"/><path d="M13.9 10.3C12.9 11.4 13.4 12.6 14.5 12.8" fill="none" stroke="#111111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M10.6 14.3C11.9 14.8 12.5 16 12.1 17.3" fill="none" stroke="#111111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.7 19.1C13.4 18.2 14.6 18.1 15.3 18.9" fill="none" stroke="#111111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g></g>
+  </g>
 </svg>
